@@ -1,0 +1,216 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Warning {
+  guild_id      String
+  user_id       String
+  warning_count Int      @default(0)
+  updated_at    String
+
+  @@id([guild_id, user_id])
+  @@map("warnings")
+}
+
+model WarningEvent {
+  id            BigInt  @id @default(autoincrement())
+  guild_id      String
+  user_id       String
+  actor_user_id String?
+  reason        String?
+  created_at    String
+
+  @@map("warning_events")
+}
+
+model ModerationLog {
+  id             BigInt  @id @default(autoincrement())
+  guild_id       String
+  actor_user_id  String?
+  target_user_id String?
+  action         String
+  reason         String?
+  channel_id     String?
+  message_id     String?
+  metadata       String?
+  created_at     String
+
+  @@map("moderation_logs")
+}
+
+model GuildConfig {
+  guild_id                       String  @id
+  log_channel_id                 String?
+  welcome_channel_id             String?
+  rules_channel_id               String?
+  chat_channel_id                String?
+  help_channel_id                String?
+  about_channel_id               String?
+  perks_channel_id               String?
+  leveling_channel_id            String?
+  welcome_message_template       String?
+  levelup_message_template       String?
+  kick_message_template          String?
+  ban_message_template           String?
+  mute_message_template          String?
+  level_card_font                String  @default("default")
+  level_card_primary_color       String  @default("#66f2c4")
+  level_card_accent_color        String  @default("#6da8ff")
+  level_card_background_url      String?
+  level_card_overlay_opacity     Float   @default(0.38)
+  welcome_card_enabled           Boolean @default(false)
+  welcome_card_title_template    String?
+  welcome_card_subtitle_template String?
+  welcome_card_font              String  @default("default")
+  welcome_card_primary_color     String  @default("#f8fafc")
+  welcome_card_accent_color      String  @default("#6dd6ff")
+  welcome_card_background_url    String?
+  welcome_card_overlay_opacity   Float   @default(0.48)
+  ticket_enabled                 Boolean @default(false)
+  ticket_trigger_channel_id      String?
+  ticket_trigger_message_id      String?
+  ticket_trigger_emoji           String  @default("🎫")
+  ticket_category_channel_id     String?
+  ticket_support_role_id         String?
+  ticket_welcome_template        String?
+  admin_role_name                String  @default("Admin")
+  mod_role_name                  String  @default("Moderator")
+  sync_mode                      String  @default("global")
+  sync_guild_id                  String?
+  verification_url               String?
+  leveling_enabled               Boolean @default(true)
+  raid_detection_enabled         Boolean @default(true)
+  raid_gate_threshold            Float   @default(0.72)
+  raid_monitor_window_seconds    Int     @default(90)
+  raid_join_rate_threshold       Int     @default(8)
+  gate_duration_seconds          Int     @default(900)
+  join_gate_mode                 String  @default("timeout")
+
+  @@map("guild_config")
+}
+
+model RaidState {
+  guild_id            String  @id
+  gate_active         Boolean @default(false)
+  gate_reason         String?
+  gate_until          String?
+  updated_at          String?
+  lockdown_active     Boolean @default(false)
+  lockdown_reason     String?
+  lockdown_until      String?
+  lockdown_snapshot   String?
+  lockdown_updated_at String?
+
+  @@map("raid_state")
+}
+
+model VerificationQueue {
+  guild_id           String
+  user_id            String
+  status             String
+  risk_score         Float
+  verification_url   String?
+  reason             String?
+  created_at         String
+  updated_at         String
+  verified_by_user_id String?
+
+  @@id([guild_id, user_id])
+  @@index([guild_id, status, updated_at])
+  @@map("verification_queue")
+}
+
+model JoinEvent {
+  id                  BigInt  @id @default(autoincrement())
+  guild_id            String
+  user_id             String
+  account_age_days    Float
+  has_avatar          Boolean
+  profile_score       Float
+  join_rate           Float
+  young_account_ratio Float
+  risk_score          Float
+  risk_level          String
+  action              String
+  metadata            String?
+  created_at          String
+
+  @@index([guild_id, id(sort: Desc)])
+  @@map("join_events")
+}
+
+model ReactionRole {
+  id                 BigInt  @id @default(autoincrement())
+  guild_id           String
+  channel_id         String
+  message_id         String
+  emoji_key          String
+  emoji_display      String
+  role_id            String
+  created_by_user_id String?
+  created_at         String
+
+  @@unique([guild_id, channel_id, message_id, emoji_key, role_id])
+  @@index([guild_id, channel_id, message_id, emoji_key])
+  @@map("reaction_roles")
+}
+
+model MemberLevel {
+  guild_id      String
+  user_id       String
+  xp            Int     @default(0)
+  level         Int     @default(0)
+  message_count Int     @default(0)
+  voice_seconds Int     @default(0)
+  last_xp_at    String?
+  updated_at    String
+
+  @@id([guild_id, user_id])
+  @@index([guild_id, level(sort: Desc), xp(sort: Desc), message_count(sort: Desc), user_id(sort: Asc)])
+  @@map("member_levels")
+}
+
+model CommandToggle {
+  guild_id     String
+  command_name String
+  enabled      Boolean @default(true)
+  updated_at   String
+
+  @@id([guild_id, command_name])
+  @@index([guild_id, command_name, enabled])
+  @@map("command_toggles")
+}
+
+model TicketThread {
+  guild_id           String
+  user_id            String
+  channel_id         String
+  trigger_channel_id String?
+  trigger_message_id String?
+  created_at         String
+  updated_at         String
+
+  @@id([guild_id, user_id])
+  @@index([guild_id, channel_id])
+  @@map("ticket_threads")
+}
+
+model ReactionRolePanel {
+  guild_id   String
+  channel_id String
+  message_id String
+  content    String
+  created_at String
+  updated_at String
+
+  @@id([guild_id, message_id])
+  @@map("reaction_role_panels")
+}

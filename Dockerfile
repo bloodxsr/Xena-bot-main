@@ -25,13 +25,16 @@ RUN npm install
 # 6. Copy all project files
 COPY . .
 
-# 7. Build the Rust binary
+# 7. Generate Prisma client
+RUN npx prisma generate
+
+# 8. Build the Rust binary
 RUN cargo build --manifest-path raid_ml_sidecar/Cargo.toml --release
 
-# 8. Environment Setup
+# 9. Environment Setup
 ENV RAID_ML_HOST=0.0.0.0
 ENV RAID_ML_PORT=8787
 ENV PORT=10000
 
-# 9. Start the process manager
+# 10. Start the process manager
 CMD ["node", "scripts/run-rust-stack.js"]

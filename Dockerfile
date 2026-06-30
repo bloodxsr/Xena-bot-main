@@ -1,5 +1,5 @@
 # 1. Use Node base
-FROM node:22-bookworm
+FROM node:20-bookworm
 
 # 2. Install Rust, Python, and System dependencies
 RUN apt-get update && apt-get install -y \
